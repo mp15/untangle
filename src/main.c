@@ -89,7 +89,7 @@ state_t* init(parsed_opts_t* opts) {
         return NULL;
     }
 
-    retval->merged_input_file = sam_open(opts->merged_input_name, "r", 0);
+    retval->merged_input_file = sam_open(opts->merged_input_name, "rb", 0);
     if (!retval->merged_input_file) {
         dprintf(STDERR_FILENO, "Could not open header file (%s)", opts->merged_input_name);
         return NULL;
@@ -114,6 +114,7 @@ state_t* init(parsed_opts_t* opts) {
     retval->input_count = opts->input_count;
     retval->input_file = (FILE**)calloc(opts->input_count, sizeof(FILE*));
     retval->input_output_file = (samFile**)calloc(opts->input_count, sizeof(samFile*));
+    retval->input_output_header = (bam_hdr_t**)calloc(opts->input_count, sizeof(bam_hdr_t*));
     if (!retval->input_file || !retval->input_output_file) {
         dprintf(STDERR_FILENO, "Out of memory");
         free(retval);
@@ -137,6 +138,15 @@ state_t* init(parsed_opts_t* opts) {
     }
 
     return retval;
+}
+
+ssize_t getlineAndChomp(char** line, size_t* buffsize, FILE * restrict stream ) {
+    ssize_t size = getline(line, buffsize, stream);
+    if (size > 0 ) {
+        char* linedata = *line;
+        if (linedata[size-1] == '\n') linedata[size-1] = '\0';
+    }
+    return size;
 }
 
 bool fix_merge(state_t* opts) {
@@ -163,7 +173,7 @@ bool fix_merge(state_t* opts) {
     char **input_read_name = (char**)calloc(opts->input_count, sizeof(char*));
     size_t *input_buff_len = (size_t*)calloc(opts->input_count, sizeof(size_t));
     for (size_t i = 0; i < opts->input_count; i++) {
-        if( getline(&input_read_name[i],&input_buff_len[i], opts->input_file[i]) < 0 ) {
+        if( getlineAndChomp(&input_read_name[i],&input_buff_len[i], opts->input_file[i]) < 0 ) {
             free(input_read_name[i]);
             input_read_name[i] = NULL;
         }
@@ -176,7 +186,7 @@ bool fix_merge(state_t* opts) {
             if ((input_read_name[i] != NULL) && !strcmp(bam_get_qname(file_read), input_read_name[i])) {
                 found = true;
                 // replace read name we just ate
-                if( getline(&input_read_name[i],&input_buff_len[i], opts->input_file[i]) < 0 ) {
+                if( getlineAndChomp(&input_read_name[i],&input_buff_len[i], opts->input_file[i]) < 0 ) {
                     free(input_read_name[i]);
                     input_read_name[i] = NULL;
                 }
