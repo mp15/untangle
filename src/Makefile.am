@@ -1,4 +1,4 @@
-bin_PROGRAMS = fix_merge
+bin_PROGRAMS = untangle
 
-fix_merge_SOURCES = main.c
+untangle_SOURCES = main.c
 

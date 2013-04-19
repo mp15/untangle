@@ -1,4 +1,4 @@
-fix_merge
+SAM Untangle
 =============
 
-fixes tid and mtid of files merged without reference to their @SQ order and presence
+Extracts files from a previously merged bam file.

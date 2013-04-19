@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.61])
-AC_INIT([fix_merge], [1.0], [mp15@sanger.ac.uk])
+AC_INIT([untangle], [1.0], [mp15@sanger.ac.uk])
 AM_INIT_AUTOMAKE([-Wall foreign])
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS([config.h])
